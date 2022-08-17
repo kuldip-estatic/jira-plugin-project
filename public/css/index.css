@@ -1,0 +1,21 @@
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+}
+.mainNavigation {
+  margin-top: 10px !important;
+  margin-left: 15px !important;
+  margin-right: 15px !important;
+}
+.mainTable {
+  margin-top: 40px;
+  margin-left: 15px !important;
+  margin-right: 15px !important;
+  border: 1px gray;
+}
+
+.dataMain{
+  margin-top: 10px !important;
+  margin-left: 15px !important;
+  margin-right: 15px !important;
+}
