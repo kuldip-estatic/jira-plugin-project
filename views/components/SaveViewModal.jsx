@@ -22,6 +22,8 @@ const SaveViewModal = ({
 }) => {
   const closeModal = () => setIsOpen(false);
   const [apiCall, setApiCall] = useState(1);
+
+  // For create filter and submit the filter.
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -57,7 +59,6 @@ const SaveViewModal = ({
       },
     });
 
-    // console.log("selectedColums", selectedColumns);
     let selectedColumnObject = { columns: [] };
     selectedColumns.forEach((item) =>
       selectedColumnObject.columns.push(item.value)
@@ -70,9 +71,7 @@ const SaveViewModal = ({
       url: `/rest/api/3/filter/10057/columns`,
       type: "PUT",
       contentType: "application/json",
-      // data: JSON.stringify(formData1),
       accept: "accept: application/json",
-      //contentType: "*/*",
       data: dataVal,
       success: (response) => {
         setApiCall((prevState) => prevState + 1);

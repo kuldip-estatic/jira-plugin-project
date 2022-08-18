@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import DynamicTable from "@atlaskit/dynamic-table";
 import { AtlassianNavigation } from "@atlaskit/atlassian-navigation";
 import DropdownMenu, {
   DropdownItemCheckbox,
@@ -19,42 +18,6 @@ const Wrapper = styled.div`
     overflow-x: auto;
     caption {
       margin-bottom: 20px;
-    }
-    td {
-      font-size: 15px;
-      width: 200px;
-      max-width: 200px;
-      min-width: 200px;
-      word-break: break-all;
-      white-space: nowrap;
-      overflow: hidden !important;
-      text-overflow: ellipsis;
-      padding: 10px;
-    }
-    th {
-      font-size: 15px;
-      width: 200px;
-      max-width: 200px;
-      min-width: 200px;
-      word-break: break-all;
-      white-space: nowrap;
-      overflow: hidden !important;
-      text-overflow: ellipsis;
-      padding: 10px;
-    }
-    tbody {
-      display: block;
-      height: 218px;
-      overflow: auto;
-    }
-    thead,
-    tbody tr {
-      display: table;
-      width: 100%;
-      table-layout: fixed;
-    }
-    tr:nth-child(even) {
-      background: #f6f6f6;
     }
   }
 `;
@@ -82,14 +45,9 @@ const customJira = (props) => {
   const [filterList, setFilterList] = useState([]);
   const [issues, setIssue] = useState([]);
   const [selectedColumns, setSelectedColumns] = useState([]);
-  const [pageNumber, setPageNumber] = useState(1);
   const [status, setStatus] = useState([]);
   const [selectedStatusColumns, setSelectedStatusColumns] = useState([]);
-  const [head, setHead] = useState({ cells: [] });
-  const [rows, setRows] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-
-  const caption = "List Of Issues";
 
   const getFilterList = () =>
     AP.request("/rest/api/3/filter/my?includeFavourites=true")
@@ -154,107 +112,6 @@ const customJira = (props) => {
     setStatus(statusList);
   }, []);
 
-  useEffect(() => {
-    if (!issues.length) return;
-    const rowKeys = issues.length ? ["id", "key", ...Object.keys(names)] : [];
-    if (selectedStatusColumns.length) {
-      const filteredRows = selectedStatusColumns
-        .filter((selectedRow) => Object.keys(selectedRow).length > 1)
-        .map((row) => ({
-          cells: rowKeys
-            .filter((rowKey) =>
-              selectedColumns
-                .map((selectedColumn) => selectedColumn.value)
-                .includes(rowKey)
-            )
-            .map((field) => ({ content: rowsData(row, field) })),
-        }));
-      setRows(filteredRows);
-    } else {
-      const allRows = issues.map((row) => ({
-        cells: rowKeys
-          .filter((rowKey) =>
-            selectedColumns
-              .map((selectedColumn) => selectedColumn.value)
-              .includes(rowKey)
-          )
-          .map((field) => {
-            return {
-              content: rowsData(row, field),
-            };
-          }),
-      }));
-      setRows(allRows);
-    }
-  }, [issues, selectedColumns, selectedStatusColumns]);
-
-  useEffect(() => {
-    if (!issues.length) return;
-    issues.map(() => {
-      let tableHeader = [];
-      tableHeader = listUnion(columns, selectedColumns, "value").map(
-        (title) => {
-          return {
-            content: title.text,
-            key: title.value,
-            isSortable: true,
-          };
-        }
-      );
-      const headObject = { cells: tableHeader };
-      setHead(headObject);
-    });
-  }, [columns, selectedColumns]);
-
-  const getPropByString = (obj, propString) => {
-    if (!propString) return obj;
-    let props = propString.split(".");
-    let i = 0;
-    for (let iLen = props.length - 1; i < iLen; i++) {
-      let prop = props[i];
-
-      let value = obj[prop];
-      if (value !== undefined) {
-        obj = value;
-      } else {
-        break;
-      }
-    }
-    return obj[props[i]];
-  };
-
-  const rowsData = (data, field) => {
-    if (
-      !selectedColumns
-        .map((selectedColumn) => selectedColumn.value)
-        .includes(field)
-    )
-      return null;
-
-    const detailProps = {
-      assignee: "assignee.displayName",
-      project: "project.name",
-      watches: "watches.isWatching",
-      priority: "priority.name",
-      customfield_10018: "customfield_10018.showField",
-      status: "status.name",
-      creator: "creator.displayName",
-      reporter: "reporter.displayName",
-      aggregateprogress: "aggregateprogress.progress",
-      progress: "progress.progress",
-      votes: "votes.hasVoted",
-    };
-
-    const detailPropNames = Object.keys(detailProps);
-    let rowData =
-      typeof data[field] === "object" && data[field] !== null
-        ? detailPropNames.includes(field)
-          ? getPropByString(data, detailProps[field])
-          : data[field].name
-        : data[field];
-    return rowData;
-  };
-
   const handleSelection = (currentColumn) => {
     let currentSelectedColumns = [...selectedColumns];
     if (
@@ -295,7 +152,6 @@ const customJira = (props) => {
       else currentStatusSelected.push({ status: { name: currentStatus.name } });
     }
     setSelectedStatusColumns([...currentStatusSelected]);
-    setPageNumber(1);
   };
 
   useEffect(
@@ -368,18 +224,6 @@ const customJira = (props) => {
         },
       });
     } else if (item.jql === "") setSelectedStatusColumns([...issues]);
-    // AP.request({
-    //   url: `/rest/api/3/filter/${+item.id}/columns`,
-    //   type: "GET",
-    //   success: (response) => {
-    //     console.log("response", response);
-    //     debugger;
-    //   },
-    //   error: (error) => {
-    //     console.log("error", error);
-    //     debugger;
-    //   },
-    // });
   };
 
   return (
@@ -427,9 +271,7 @@ const customJira = (props) => {
                 </DropdownItemCheckboxGroup>
               </DropdownItemGroup>
             </DropdownMenu>,
-            <Button appearance="subtle" onClick={() => setIsOpen(true)}>
-              Save As
-            </Button>,
+
             <DropdownMenu
               className="test12"
               trigger="Filters"
@@ -447,20 +289,28 @@ const customJira = (props) => {
                   ))}
               </DropdownItemGroup>
             </DropdownMenu>,
+            <Button appearance="primary" onClick={() => setIsOpen(true)}>
+              Save As
+            </Button>,
           ]}
         />
       </div>
+
       <SaveViewModal {...saveViewModalProps} />
       <div className="dataMain">
         <div>
+          Selected Columns: [
           {selectedColumns.map((item) => (
             <>{JSON.stringify(item.text)}</>
           ))}
+          ]
         </div>
         <div>
+          selected status: [
           {selectedStatusColumns.map((item) => (
             <>{JSON.stringify(item.status.name)}</>
           ))}
+          ]
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 .mainContainer {
+  height: 600px !important;
   display: flex;
   flex-direction: column;
 }
